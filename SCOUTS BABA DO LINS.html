@@ -1,0 +1,176 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BABA DO LINS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #FFFFFF;
+        }
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .logo {
+            max-width: 200px;
+        }
+        .legend {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #d3d3d3;
+        }
+        input {
+            width: 90%;
+            text-align: center;
+            padding: 4px;
+            box-sizing: border-box;
+        }
+        .time-header {
+            font-weight: bold;
+            font-size: 18px;
+            background-color: #d3d3d3;
+        }
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        th:first-child, td:first-child {
+            width: 30%;
+            text-align: left;
+        }
+        th:not(:first-child), td:not(:first-child) {
+            width: 10%;
+        }
+        @media (max-width: 600px) {
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://i.postimg.cc/NM2SctSP/77.png" alt="Baba do Lins" class="logo">
+        <div class="legend">⚽ Gol | 👟 Passe | 🛑 Desarme | 👐 Defesa</div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>⚽</th>
+                <th>👟</th>
+                <th>🛑</th>
+                <th>👐</th>
+                <th style="background-color: red;"></th>
+                <th style="background-color: yellow;"></th>
+                <th style="background-color: blue;"></th>
+            </tr>
+        </thead>
+        <tbody id="scoutTable"></tbody>
+    </table>
+    <div class="buttons-container">
+        <button onclick="exportarDados()">Exportar Scouts</button>
+        <button onclick="mostrarRanking()">Ranking</button>
+    </div>
+    <script>
+        const times = ["Time 01", "Time 02", "Time 03"];
+        const jogadoresPorTime = 7;
+
+        function carregarTabela() {
+            const tableBody = document.getElementById("scoutTable");
+            times.forEach((time) => {
+                const rowHeader = document.createElement("tr");
+                rowHeader.innerHTML = `<td colspan='8' class='time-header'>${time}</td>`;
+                tableBody.appendChild(rowHeader);
+                for (let i = 0; i < jogadoresPorTime; i++) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td><input type='text' placeholder='Nome'></td>
+                        <td><input type='number' min='0'></td>
+                        <td><input type='number' min='0'></td>
+                        <td><input type='number' min='0'></td>
+                        <td><input type='number' min='0'></td>
+                        <td><input type='number' min='0'></td>
+                        <td><input type='number' min='0'></td>
+                        <td><input type='number' min='0'></td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+        }
+
+        function exportarDados() {
+            let dados = "Time,Nome,Gols,Passes,Desarmes,Defesas,Cartão Vermelho,Cartão Amarelo,Cartão Azul\n";
+            let timeAtual = "";
+            document.querySelectorAll("tbody tr").forEach(row => {
+                if (row.classList.contains('time-header')) {
+                    timeAtual = row.innerText;
+                } else {
+                    let linha = timeAtual + ",";
+                    row.querySelectorAll("td input").forEach((input) => {
+                        linha += input.value + ",";
+                    });
+                    dados += linha.slice(0, -1) + "\n";
+                }
+            });
+            const blob = new Blob([dados], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "scouts_futebol.csv";
+            link.click();
+        }
+
+        function mostrarRanking() {
+            let jogadores = [];
+            document.querySelectorAll("tbody tr").forEach(row => {
+                if (!row.classList.contains('time-header')) {
+                    let inputs = row.querySelectorAll("td input");
+                    if (inputs.length > 0) {
+                        jogadores.push({
+                            nome: inputs[0].value,
+                            gols: parseInt(inputs[1].value) || 0,
+                            passes: parseInt(inputs[2].value) || 0,
+                            desarmes: parseInt(inputs[3].value) || 0,
+                            defesas: parseInt(inputs[4].value) || 0,
+                        });
+                    }
+                }
+            });
+            jogadores.sort((a, b) => b.gols - a.gols);
+            let artilheiro = jogadores[0]?.nome || "N/D";
+            jogadores.sort((a, b) => b.passes - a.passes);
+            let garcom = jogadores[0]?.nome || "N/D";
+            jogadores.sort((a, b) => b.desarmes - a.desarmes);
+            let xerife = jogadores[0]?.nome || "N/D";
+            jogadores.sort((a, b) => b.defesas - a.defesas);
+            let paredao = jogadores[0]?.nome || "N/D";
+            alert(`🏆 Ranking:\n⚽ Artilheiro: ${artilheiro}\n👟 Garçom: ${garcom}\n🛑 Xerife: ${xerife}\n👐 Paredão: ${paredao}`);
+        }
+
+        carregarTabela();
+    </script>
+</body>
+</html>
